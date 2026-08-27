@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.atcsafety</groupId>
+        <artifactId>atc-safety-monitoring</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>radar-data-processing</artifactId>
+    <name>radar-data-processing</name>
+    <description>Radar Data Processing Service — reads JSON dump, validates, publishes to Kafka</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atcsafety</groupId>
+            <artifactId>atcsafety-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring Boot core — logging and auto-configuration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Jackson databind + datatype modules (not included in spring-boot-starter) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+
+        <!-- Spring Kafka — KafkaTemplate producer for radar.validated-positions topic -->
+        <!-- spring-boot-starter-kafka pulls in spring-boot-kafka (auto-configuration)
+             and spring-kafka (KafkaTemplate) — both are needed since Spring Boot 4.0
+             extracted Kafka auto-configuration into its own spring-boot-kafka module -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ArchUnit — executable architecture rules; version managed in root pom -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Run from the repo root so tools/radar-dump.json resolves correctly.
+                         project.basedir = backend/radar-data-processing → /../.. = repo root -->
+                    <workingDirectory>${project.basedir}/../..</workingDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

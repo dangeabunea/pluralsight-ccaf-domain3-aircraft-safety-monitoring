@@ -1,0 +1,95 @@
+<div class="rounded-xl overflow-hidden"
+     style="background: var(--color-topbar); border: 1px solid var(--color-border);">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 px-5 py-4 border-b"
+       style="border-color: var(--color-border);">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
+         style="background: #fffbeb;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2">
+        <polyline points="17 11 21 7 17 3"/><line x1="21" y1="7" x2="9" y2="7"/>
+        <polyline points="7 21 3 17 7 13"/><line x1="15" y1="17" x2="3" y2="17"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="text-sm font-semibold m-0" style="color: var(--color-text-primary);">Escalate Event</h2>
+      <p class="text-xs m-0 mt-0.5" style="color: var(--color-text-subtle);">Select a reason to escalate for further review</p>
+    </div>
+  </div>
+
+  <div class="p-5 flex flex-col gap-5">
+
+    <!-- Reason chips -->
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider mb-2.5"
+         style="color: var(--color-text-subtle);">Escalation reason <span style="color: var(--color-aircraft-pink);">*</span></p>
+      <div class="grid grid-cols-2 gap-2">
+        @for (reason of reasons; track reason) {
+          <button
+            type="button"
+            class="text-left text-xs px-3 py-2.5 rounded-lg border transition-colors cursor-pointer"
+            [style]="chipStyle(reason)"
+            (click)="selectReason(reason)">
+            {{ reason }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Additional notes -->
+    <div>
+      <label class="text-xs font-semibold uppercase tracking-wider block mb-2"
+             style="color: var(--color-text-subtle);">
+        Additional notes <span class="normal-case font-normal">(optional)</span>
+      </label>
+      <textarea
+        class="w-full text-sm rounded-lg px-3 py-2.5 resize-none outline-none transition-colors"
+        style="background: var(--color-card-bg); color: var(--color-text-primary); border: 1px solid var(--color-border); min-height: 80px;"
+        placeholder="Add context or supplementary details..."
+        [value]="additionalNotes()"
+        [attr.maxlength]="MAX_NOTES"
+        (input)="onNotesInput($event)">
+      </textarea>
+      <p class="text-right text-xs mt-1" style="color: var(--color-text-subtle);">
+        {{ additionalNotes().length }}/{{ MAX_NOTES }}
+      </p>
+    </div>
+
+    <!-- API error -->
+    @if (apiError()) {
+      <p class="text-xs rounded-lg px-3 py-2.5"
+         style="background: #fef2f2; border: 1px solid #fecaca; color: var(--color-aircraft-pink);">
+        {{ apiError() }}
+      </p>
+    }
+
+  </div>
+
+  <!-- Footer -->
+  <div class="flex items-center justify-end gap-2 px-5 py-4 border-t"
+       style="border-color: var(--color-border);">
+    <button
+      type="button"
+      class="text-xs px-4 py-2 rounded-lg border transition-colors"
+      style="background: var(--color-card-bg); color: var(--color-text-secondary); border-color: var(--color-border);"
+      [disabled]="submitting()"
+      (click)="cancel()">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="text-xs px-4 py-2 rounded-lg border transition-colors"
+      style="border-color: #fde68a;"
+      [style.background]="selectedReason() && !submitting() ? '#fffbeb' : 'var(--color-card-bg)'"
+      [style.color]="selectedReason() && !submitting() ? '#d97706' : 'var(--color-text-subtle)'"
+      [disabled]="!selectedReason() || submitting()"
+      (click)="confirm()">
+      @if (submitting()) {
+        Escalating…
+      } @else {
+        Confirm Escalation
+      }
+    </button>
+  </div>
+
+</div>

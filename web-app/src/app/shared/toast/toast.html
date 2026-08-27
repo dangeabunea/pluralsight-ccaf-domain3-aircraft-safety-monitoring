@@ -1,0 +1,11 @@
+@if (toast.active()) {
+  <div class="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg text-sm"
+       role="status"
+       aria-live="polite"
+       style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    {{ toast.message() }}
+  </div>
+}

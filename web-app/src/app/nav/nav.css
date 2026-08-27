@@ -1,0 +1,16 @@
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.nav-link-active {
+  background: var(--color-nav-active-bg);
+  color: var(--color-nav-active-text) !important;
+  border-bottom: 2px solid var(--color-nav-active-text);
+}

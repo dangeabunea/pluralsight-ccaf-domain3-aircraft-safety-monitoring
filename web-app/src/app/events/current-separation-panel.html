@@ -1,0 +1,52 @@
+<div
+  data-panel
+  class="border-b"
+  style="padding: 16px 20px; border-color: var(--color-border);"
+  [style.background]="isAmber() ? '#fff7ed' : 'var(--color-topbar)'">
+
+  <!-- Header: clock icon + "Separation at HH:MM:SS" -->
+  <div class="flex items-center gap-1.5 mb-2.5"
+       style="color: var(--color-text-subtle); font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase;">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+    Separation at {{ currentTime() }}
+  </div>
+
+  <!-- Side-by-side separation cards -->
+  <div class="flex gap-3">
+
+    <!-- Horizontal separation card -->
+    <div class="flex-1 rounded-lg text-center"
+         style="padding: 12px;"
+         [style.background]="isAmber() ? '#ffedd5' : 'var(--color-nav-active-bg)'">
+      <div style="color: var(--color-text-subtle); font-size: 11px; margin-bottom: 4px;">
+        H Sep
+      </div>
+      <div class="font-bold"
+           style="font-size: 20px;"
+           [style.color]="isAmber() ? '#f5a623' : 'var(--color-text-primary)'">
+        {{ formatHSep() }}&nbsp;<span style="font-size: 12px; font-weight: 400;"
+                                       [style.color]="isAmber() ? '#f5a623' : 'var(--color-text-secondary)'">NM</span>
+      </div>
+    </div>
+
+    <!-- Vertical separation card -->
+    <div class="flex-1 rounded-lg text-center"
+         style="padding: 12px;"
+         [style.background]="isAmber() ? '#ffedd5' : 'var(--color-nav-active-bg)'">
+      <div style="color: var(--color-text-subtle); font-size: 11px; margin-bottom: 4px;">
+        V Sep
+      </div>
+      <div class="font-bold"
+           style="font-size: 20px;"
+           [style.color]="isAmber() ? '#f5a623' : 'var(--color-text-primary)'">
+        {{ formatVSep() }}&nbsp;<span style="font-size: 12px; font-weight: 400;"
+                                       [style.color]="isAmber() ? '#f5a623' : 'var(--color-text-secondary)'">ft</span>
+      </div>
+    </div>
+
+  </div>
+</div>

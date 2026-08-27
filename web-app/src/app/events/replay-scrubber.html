@@ -1,0 +1,89 @@
+<div class="flex flex-col gap-2" style="padding: 8px 16px; background: var(--color-topbar); border-top: 1px solid var(--color-border);">
+
+  <!-- Time labels row: start (left) | end (right) -->
+  <div class="flex justify-between items-end" style="margin-bottom: 4px;">
+    <span class="font-mono text-xs" style="color: var(--color-text-subtle);">{{ startTime() }}</span>
+    <span class="font-mono text-xs" style="color: var(--color-text-subtle);">{{ endTime() }}</span>
+  </div>
+
+  <!-- Scrubbar track -->
+  <div class="relative" style="height: 28px; display: flex; align-items: center;">
+    <div class="w-full relative" style="height: 5px; background: #e2e8f0; border-radius: 3px;">
+
+      <!-- Elapsed fill -->
+      <div
+        [style.width]="pct(currentIndex())"
+        style="
+          position: absolute;
+          left: 0;
+          height: 100%;
+          background: #4a9eff;
+          border-radius: 3px;
+          opacity: 0.8;
+        ">
+      </div>
+
+      <!-- Event start tick -->
+      <div
+        data-tick="start"
+        [style.left]="pct(eventStartIndex())"
+        style="
+          position: absolute;
+          top: -7px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          pointer-events: none;
+        ">
+        <div style="width: 2px; height: 19px; background: #475569; border-radius: 1px; opacity: 0.9;"></div>
+      </div>
+
+      <!-- Event end tick -->
+      <div
+        data-tick="end"
+        [style.left]="pct(eventEndIndex())"
+        style="
+          position: absolute;
+          top: -7px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          pointer-events: none;
+        ">
+        <div style="width: 2px; height: 19px; background: #475569; border-radius: 1px; opacity: 0.9;"></div>
+      </div>
+
+      <!-- Thumb -->
+      <div
+        [style.left]="pct(currentIndex())"
+        style="
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 13px;
+          height: 13px;
+          background: #4a9eff;
+          border-radius: 50%;
+          border: 2px solid #e2edf7;
+          z-index: 2;
+          box-shadow: 0 0 0 3px #4a9eff33;
+          pointer-events: none;
+        ">
+      </div>
+
+      <!-- Native range input — transparent overlay for user interaction -->
+      <input
+        type="range"
+        [attr.min]="0"
+        [attr.max]="maxIndex()"
+        [value]="currentIndex()"
+        (input)="onScrub($event)"
+        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        style="z-index: 3;"
+        aria-label="Replay scrubbar"
+      />
+    </div>
+  </div>
+
+
+</div>

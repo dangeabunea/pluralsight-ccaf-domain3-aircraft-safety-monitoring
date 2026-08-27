@@ -1,0 +1,106 @@
+services:
+  kafka:
+    image: apache/kafka:4.2.0
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: atc_safety
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-ui:
+    image: redpandadata/console:latest
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  separation-infringement-detection:
+    build:
+      context: .
+      dockerfile: ./backend/separation-infringement-detection/Dockerfile
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/atc_safety
+      DETECTION_KAFKA_TOPIC: radar.validated-positions
+      DETECTION_HORIZONTAL_THRESHOLD_NM: "5.0"
+      DETECTION_VERTICAL_THRESHOLD_FT: "1000"
+      DETECTION_GRACE_PERIOD_CYCLES: "3"
+    depends_on:
+      kafka:    { condition: service_healthy }
+      mongodb:  { condition: service_healthy }
+
+  radar-data-processing:
+    build:
+      context: .
+      dockerfile: ./backend/radar-data-processing/Dockerfile
+    restart: "no"
+    volumes:
+      - ./tools/radar-dump.json:/app/radar-dump.json:ro
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RADAR_DUMP_FILE_PATH: /app/radar-dump.json
+      RADAR_LAT: 50.847
+      RADAR_LON: 4.349
+    depends_on:
+      kafka:
+        condition: service_healthy
+      separation-infringement-detection:
+        condition: service_started
+
+  rest-api:
+    build:
+      context: .
+      dockerfile: ./backend/rest-api/Dockerfile
+    ports:
+      - "38090:38090"
+    environment:
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/atc_safety
+    depends_on:
+      mongodb: { condition: service_healthy }
+
+  web-app:
+    build:
+      context: ./web-app
+    ports:
+      - "4300:80"
+    depends_on:
+      rest-api: { condition: service_started }
+
+volumes:
+  kafka-data:
+  mongo-data:

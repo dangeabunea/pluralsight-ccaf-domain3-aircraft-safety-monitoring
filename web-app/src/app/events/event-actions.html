@@ -1,0 +1,31 @@
+<div class="p-4 border-b" style="border-color: var(--color-border);">
+
+  <div class="text-xs font-semibold uppercase tracking-wider mb-3"
+       style="color: var(--color-text-subtle);">Actions</div>
+
+  <div class="flex gap-2">
+    <button
+      class="flex-1 flex items-center justify-center gap-2 text-xs font-medium rounded-lg py-2.5 border transition-colors cursor-pointer"
+      style="background: var(--color-card-bg); color: var(--color-text-secondary); border-color: var(--color-border);"
+      aria-label="Dismiss this event"
+      (click)="dismiss.emit()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 12l2 2 4-4"/>
+        <circle cx="12" cy="12" r="10"/>
+      </svg>
+      Dismiss
+    </button>
+
+    <button
+      class="flex-1 flex items-center justify-center gap-2 text-xs font-medium rounded-lg py-2.5 border transition-colors cursor-pointer"
+      style="background: var(--color-card-bg); color: var(--color-text-secondary); border-color: var(--color-border);"
+      aria-label="Escalate this event"
+      (click)="escalate.emit()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 17l9.2-9.2M17 17V7H7"/>
+      </svg>
+      Escalate
+    </button>
+  </div>
+
+</div>

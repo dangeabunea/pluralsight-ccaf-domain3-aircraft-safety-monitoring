@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.atcsafety</groupId>
+        <artifactId>atc-safety-monitoring</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>atcsafety-contracts</artifactId>
+    <name>atcsafety-contracts</name>
+    <description>Shared Kafka message schemas — pure Java records with Jackson annotations, zero framework dependencies</description>
+
+    <dependencies>
+        <!-- Jackson annotations for @JsonProperty / @JsonIgnoreProperties on RadarPosition.
+             Only the thin annotations jar is needed here — no databind runtime. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- No spring-boot-maven-plugin: this is a library JAR, not a runnable application -->
+
+</project>

@@ -1,0 +1,70 @@
+<nav class="fixed top-0 left-0 right-0 flex items-center h-[54px] px-6 gap-1 border-b z-50
+            bg-[var(--color-topbar)] border-[var(--color-border)]">
+
+  <!-- Logo -->
+  <span class="mr-5 flex items-center gap-2 font-bold tracking-widest text-sm"
+        style="color: var(--color-text-primary);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+         stroke="#4a9eff" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="M12 2L4 7v10l8 5 8-5V7z"/>
+      <line x1="12" y1="2" x2="12" y2="22"/>
+      <line x1="4" y1="7" x2="20" y2="7"/>
+    </svg>
+    SAFM
+  </span>
+
+  <!-- Dashboard -->
+  <a routerLink="/dashboard"
+     routerLinkActive="nav-link-active"
+     class="nav-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7"/>
+      <rect x="14" y="3" width="7" height="7"/>
+      <rect x="3" y="14" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/>
+    </svg>
+    Dashboard
+  </a>
+
+  <!-- Events -->
+  <a routerLink="/events"
+     routerLinkActive="nav-link-active"
+     [routerLinkActiveOptions]="{ paths: 'subset', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }"
+     class="nav-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    Events
+  </a>
+
+  <!-- Escalated (deep-links to events page, escalated tab) -->
+  <a routerLink="/events"
+     [queryParams]="{ tab: 'escalated' }"
+     routerLinkActive="nav-link-active"
+     [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'subset', fragment: 'ignored', matrixParams: 'ignored' }"
+     class="nav-link">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <polyline points="17 11 21 7 17 3"/>
+      <line x1="21" y1="7" x2="9" y2="7"/>
+      <polyline points="7 21 3 17 7 13"/>
+      <line x1="15" y1="17" x2="3" y2="17"/>
+    </svg>
+    Escalated
+  </a>
+
+  <!-- User -->
+  <span class="ml-auto flex items-center gap-2 text-xs"
+        style="color: var(--color-text-secondary);">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+         stroke="var(--color-text-subtle)" stroke-width="2" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    analyst&#64;atc.eu
+  </span>
+</nav>

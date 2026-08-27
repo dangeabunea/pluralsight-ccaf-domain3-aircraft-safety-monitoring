@@ -1,0 +1,216 @@
+@if (loading()) {
+  <div class="p-7">
+    <div class="animate-pulse h-8 rounded mb-4 max-w-xs"
+         style="background: var(--color-topbar); border: 1px solid var(--color-border);"></div>
+    <div class="animate-pulse h-96 rounded"
+         style="background: var(--color-topbar); border: 1px solid var(--color-border);"></div>
+  </div>
+} @else if (error()) {
+  <div class="p-7">
+    <p class="text-sm" style="color: var(--color-aircraft-pink);">{{ error() }}</p>
+  </div>
+} @else if (detail(); as d) {
+
+  <div class="flex flex-col" style="height: calc(100vh - 54px);">
+
+    <!-- Two-column layout -->
+    <div class="flex" style="flex: 1; min-height: 0; position: relative; overflow: hidden;">
+
+      <!-- Left: map + replay controls (expands to fill when panel collapsed) -->
+      <div class="flex flex-col border-r"
+           [style.flex]="panelCollapsed() ? '1' : '72'"
+           style="border-color: var(--color-border); min-width: 0;">
+
+        <!-- Separation map — Story 07-L -->
+        <app-separation-map
+          class="flex-1 min-h-0"
+          [trajectory1]="d.trajectory1"
+          [trajectory2]="d.trajectory2"
+          [currentIndex]="replay.currentIndex()"
+          [callsign1]="d.firstAircraftCallsign"
+          [callsign2]="d.secondAircraftCallsign"
+          [eventStartCycle]="d.eventStartCycle"
+          [eventEndCycle]="d.eventEndCycle" />
+
+        <!-- Replay controls — scrubberData() is null when trajectory is empty -->
+        @if (scrubberData(); as sd) {
+          <div class="flex-shrink-0">
+            <app-replay-scrubber
+              [maxIndex]="sd.maxIndex"
+              [currentIndex]="replay.currentIndex()"
+              [eventStartIndex]="sd.eventStartIndex"
+              [eventEndIndex]="sd.eventEndIndex"
+              [startTime]="sd.startTime"
+              [endTime]="sd.endTime"
+              [currentTime]="sd.currentTime"
+              (indexChange)="replay.seek($event)"
+            />
+
+            <!-- Playback buttons row -->
+            <div class="flex items-center gap-2"
+                 style="padding: 6px 16px 8px; background: var(--color-topbar);">
+
+              <!-- Go to start — dot + left-chevron icon -->
+              <button
+                (click)="onRewind()"
+                class="flex items-center gap-1.5 rounded text-xs font-medium"
+                style="background: var(--color-bg); color: var(--color-text-primary); border: 1px solid var(--color-border); padding: 7px 12px; cursor: pointer;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="5" cy="12" r="2" fill="currentColor" stroke="none"/>
+                  <polyline points="20 19 10 12 20 5"/>
+                </svg>
+                Start
+              </button>
+
+              <!-- Play / Pause toggle — solid blue, text-xs to match height -->
+              @if (replay.isPlaying()) {
+                <button
+                  (click)="onPause()"
+                  class="flex items-center gap-1.5 rounded text-xs font-semibold"
+                  style="background: #2563eb; color: #fff; border: none; padding: 7px 20px; cursor: pointer;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                  </svg>
+                  Pause
+                </button>
+              } @else {
+                <button
+                  (click)="onPlay()"
+                  class="flex items-center gap-1.5 rounded text-xs font-semibold"
+                  style="background: #2563eb; color: #fff; border: none; padding: 7px 20px; cursor: pointer;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                  Play
+                </button>
+              }
+
+              <!-- Jump to Min H Sep — double horizontal arrows -->
+              <button
+                (click)="onJumpToMinHSep()"
+                class="flex items-center gap-1.5 rounded text-xs font-medium"
+                style="background: var(--color-bg); color: var(--color-text-primary); border: 1px solid var(--color-border); padding: 7px 12px; cursor: pointer;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <polyline points="7 7 2 12 7 17"/>
+                  <polyline points="17 7 22 12 17 17"/>
+                </svg>
+                Min H Sep
+                @if (d.minHorizontalSeparationNm !== null) {
+                  <span style="color: var(--color-text-subtle); font-size: 10px;">{{ d.minHorizontalSeparationNm.toFixed(1) }} NM</span>
+                }
+              </button>
+
+              <!-- Jump to Min V Sep — double vertical arrows -->
+              <button
+                (click)="onJumpToMinVSep()"
+                [disabled]="d.minVerticalSeparationCycleIndex === null"
+                class="flex items-center gap-1.5 rounded text-xs font-medium"
+                style="background: var(--color-bg); color: var(--color-text-primary); border: 1px solid var(--color-border); padding: 7px 12px; cursor: pointer;"
+                [style.opacity]="d.minVerticalSeparationCycleIndex !== null ? '1' : '0.4'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="2" x2="12" y2="22"/>
+                  <polyline points="7 7 12 2 17 7"/>
+                  <polyline points="7 17 12 22 17 17"/>
+                </svg>
+                Min V Sep
+                @if (d.minVerticalSeparationFt !== null) {
+                  <span style="color: var(--color-text-subtle); font-size: 10px;">{{ d.minVerticalSeparationFt.toFixed(0) }} ft</span>
+                }
+              </button>
+
+              <!-- Vertical profile toggle -->
+              <button
+                (click)="showVerticalProfile.update(v => !v)"
+                class="flex items-center gap-1.5 rounded text-xs font-medium"
+                [style]="showVerticalProfile()
+                  ? 'background: #2563eb; color: #fff; border: 1px solid #2563eb; padding: 7px 12px; cursor: pointer;'
+                  : 'background: var(--color-bg); color: var(--color-text-primary); border: 1px solid var(--color-border); padding: 7px 12px; cursor: pointer;'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                V-Profile
+              </button>
+
+              <!-- Speed selector — radio-style group, right-aligned -->
+              <div class="flex items-center ml-auto" style="gap: 2px;">
+                @for (s of speeds; track s) {
+                  <button
+                    (click)="replay.setSpeed(s)"
+                    class="text-xs font-semibold cursor-pointer"
+                    [class]="'text-xs font-semibold cursor-pointer ' + (s === speeds[0] ? 'rounded-l' : s === speeds[2] ? 'rounded-r' : '')"
+                    [style]="replay.speed() === s
+                      ? 'background: #2563eb; color: #fff; border: 1px solid #2563eb; padding: 7px 12px;'
+                      : 'background: var(--color-bg); color: var(--color-text-primary); border: 1px solid var(--color-border); padding: 7px 12px;'">
+                    {{ s }}x
+                  </button>
+                }
+              </div>
+
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Vertical profile panel — floats over the map region -->
+      @if (showVerticalProfile()) {
+        <app-vertical-profile-panel
+          [trajectory1]="d.trajectory1"
+          [trajectory2]="d.trajectory2"
+          [currentIndex]="replay.currentIndex()"
+          [callsign1]="d.firstAircraftCallsign"
+          [callsign2]="d.secondAircraftCallsign"
+          [eventStartCycle]="d.eventStartCycle"
+          [eventEndCycle]="d.eventEndCycle"
+          (closed)="showVerticalProfile.set(false)"
+        />
+      }
+
+      <!-- Collapse toggle button on the right edge of the map column -->
+      <button
+        (click)="panelCollapsed.set(!panelCollapsed())"
+        aria-label="Toggle info panel"
+        [style.right]="panelCollapsed() ? '0' : '28%'"
+        style="
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10;
+          background: var(--color-topbar);
+          border: 1px solid var(--color-border);
+          border-radius: 4px 0 0 4px;
+          padding: 6px 4px;
+          cursor: pointer;
+          color: var(--color-text-subtle);
+        ">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          @if (panelCollapsed()) {
+            <polyline points="15 18 9 12 15 6"/>
+          } @else {
+            <polyline points="9 18 15 12 9 6"/>
+          }
+        </svg>
+      </button>
+
+      <!-- Right: info panel (28%) — hidden when collapsed -->
+      @if (!panelCollapsed()) {
+        <div class="flex flex-col overflow-y-auto" style="flex: 28;">
+          <app-current-separation-panel
+            [trajectory1]="d.trajectory1"
+            [trajectory2]="d.trajectory2"
+            [currentIndex]="replay.currentIndex()" />
+          <app-event-metadata [detail]="d" />
+          @if (d.status === 'PENDING_REVIEW') {
+            <app-event-actions (dismiss)="onDismiss()" (escalate)="onEscalate()" />
+          }
+          <app-event-notes [comments]="comments()" (addComment)="onAddComment($event)" />
+        </div>
+      }
+
+    </div>
+
+  </div>
+
+}

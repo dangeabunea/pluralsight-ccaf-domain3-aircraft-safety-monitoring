@@ -1,0 +1,30 @@
+<div class="rounded"
+     style="background: var(--color-bg); border: 1px solid; padding: 8px 10px; font-family: monospace; min-width: 90px;"
+     [style.borderColor]="colour()">
+
+  <!-- Callsign row -->
+  <div class="font-bold text-xs mb-1.5"
+       [style.color]="colour()">{{ callsign() }}</div>
+
+  <!-- Separator line -->
+  <div style="height: 1px; background: var(--color-border); margin-bottom: 6px;"></div>
+
+  <!-- FL + trend -->
+  <div class="flex items-center gap-1 mb-1">
+    <span class="text-xs font-semibold" style="color: var(--color-text-primary);">{{ flightLevel() }}</span>
+    <span class="text-xs" style="color: var(--color-text-secondary);">{{ altitudeTrend() }}</span>
+  </div>
+
+  <!-- Ground track -->
+  <div class="flex items-center justify-between mb-1">
+    <span style="color: var(--color-text-subtle); font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase;">Trk</span>
+    <span class="text-xs" style="color: var(--color-text-secondary);">{{ groundTrack() }}</span>
+  </div>
+
+  <!-- Speed -->
+  <div class="flex items-center justify-between">
+    <span style="color: var(--color-text-subtle); font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase;">Spd</span>
+    <span class="text-xs" style="color: var(--color-text-secondary);">{{ speedKt() }}</span>
+  </div>
+
+</div>

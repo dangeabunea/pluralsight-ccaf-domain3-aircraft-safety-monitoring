@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="SAFM PMD Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+             https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+  <description>
+    Curated PMD rules for ATC Safety Monitoring — targets correctness in safety-critical
+    code paths, null safety, method complexity, dead code, and Kafka consumer thread safety.
+    Test sources are excluded (see maven-pmd-plugin excludeRoots configuration).
+    Plugin 3.28.0 ships PMD 7.17.0; do not downgrade — Java 21 records and sealed
+    classes are not supported by PMD 6.x.
+  </description>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ERROR PRONE — null safety and bad-practice patterns
+       Primary value: protects separation distance calculations from
+       silent precision loss and null-induced misclassifications.
+       ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Catches explicit assignment of null to a variable (often a code smell) -->
+  <rule ref="category/java/errorprone.xml/NullAssignment" />
+
+  <!-- Catches new BigDecimal(0.1) — double literal loses precision silently -->
+  <rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />
+
+  <!-- Catches empty catch blocks that swallow exceptions silently -->
+  <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+    <properties>
+      <!-- Allow empty blocks with an explanatory comment -->
+      <property name="allowCommentedBlocks" value="true" />
+    </properties>
+  </rule>
+
+  <!-- Catches break/return/continue as the last statement in a loop — usually a logic error -->
+  <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       DESIGN — complexity bounds on detection logic and state machine
+       Primary value: forces the ACTIVE→GRACE_PERIOD→CLOSED state machine
+       and SeparationCalculator into decomposed, unit-testable methods.
+       ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Classical cyclomatic complexity — counts independent paths through method -->
+  <rule ref="category/java/design.xml/CyclomaticComplexity">
+    <properties>
+      <!-- Threshold of 12 per method; above this, decompose into named helpers.
+           12 (not 10) allows standard Java validation guard patterns (null checks +
+           range checks with || operators) without false positives. -->
+      <property name="methodReportLevel" value="12" />
+    </properties>
+  </rule>
+
+  <!-- Cognitive complexity — measures how hard the code is to understand (not just path count) -->
+  <rule ref="category/java/design.xml/CognitiveComplexity">
+    <properties>
+      <!-- Threshold of 15; nested loops/conditions in Kafka consumers should be extracted -->
+      <property name="reportLevel" value="15" />
+    </properties>
+  </rule>
+
+  <!-- Flags classes with too many methods — early warning of God Service growth -->
+  <rule ref="category/java/design.xml/TooManyMethods">
+    <properties>
+      <!-- 20 public + private methods is the ceiling; test classes excluded by plugin config -->
+      <property name="maxmethods" value="20" />
+    </properties>
+  </rule>
+
+  <!-- Detects God Classes using three WMC/TCC/ATFD metrics -->
+  <rule ref="category/java/design.xml/GodClass" />
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       BEST PRACTICES — dead code and logging discipline
+       Primary value: dead code in the detection pipeline can silently
+       mislead developers; System.out bypasses SLF4J MDC context.
+       ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Catches System.out.print* calls — complements ArchUnit LoggingPolicy on non-test code -->
+  <rule ref="category/java/bestpractices.xml/SystemPrintln" />
+
+  <!-- Catches private fields never read after assignment -->
+  <rule ref="category/java/bestpractices.xml/UnusedPrivateField" />
+
+  <!-- Catches private methods never called -->
+  <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod" />
+
+  <!-- Catches method parameters declared but never used in the body -->
+  <rule ref="category/java/bestpractices.xml/UnusedFormalParameter" />
+
+  <!-- Catches reassignment of method parameters — obscures the original caller intent -->
+  <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters" />
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       MULTITHREADING — Kafka consumer and ActiveEventsRegistry safety
+       Primary value: the in-memory ActiveEventsRegistry is shared state;
+       double-checked locking and unsynchronized access are silent data races.
+       ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Catches broken double-checked locking patterns -->
+  <rule ref="category/java/multithreading.xml/DoubleCheckedLocking" />
+
+  <!-- Catches non-thread-safe singleton implementations -->
+  <rule ref="category/java/multithreading.xml/NonThreadSafeSingleton" />
+
+  <!-- Catches static java.text.Format instances used without synchronization -->
+  <rule ref="category/java/multithreading.xml/UnsynchronizedStaticFormatter" />
+
+  <!-- Flags synchronized on entire method — prefer block-level synchronization -->
+  <rule ref="category/java/multithreading.xml/AvoidSynchronizedAtMethodLevel" />
+
+</ruleset>

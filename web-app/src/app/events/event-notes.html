@@ -1,0 +1,29 @@
+<div class="p-4 flex-1">
+
+  <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-3"
+       style="color: var(--color-text-subtle);">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+    Notes ({{ comments.length }})
+  </div>
+
+  @if (comments.length === 0) {
+    <p class="text-xs italic mb-3" style="color: var(--color-text-subtle);">No notes yet.</p>
+  } @else {
+    <div class="flex flex-col gap-2 mb-3">
+      @for (comment of comments; track comment.id) {
+        <div class="rounded-lg p-3" style="background: var(--color-card-bg); border: 1px solid var(--color-border);">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-semibold" style="color: var(--color-text-secondary);">{{ comment.author }}</span>
+            <span class="text-xs" style="color: var(--color-text-subtle);">{{ formatCommentDate(comment.createdAt) }}</span>
+          </div>
+          <p class="text-xs leading-relaxed m-0" style="color: var(--color-text-secondary);">{{ comment.text }}</p>
+        </div>
+      }
+    </div>
+  }
+
+  <app-add-comment (submitted)="addComment.emit($event)" />
+
+</div>

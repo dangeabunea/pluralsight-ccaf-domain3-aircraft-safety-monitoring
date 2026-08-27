@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.atcsafety</groupId>
+        <artifactId>atc-safety-monitoring</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>separation-infringement-detection</artifactId>
+    <name>separation-infringement-detection</name>
+    <description>Separation Infringement Detection Service — Kafka consumer, detection rules, event lifecycle</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.atcsafety</groupId>
+            <artifactId>atcsafety-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Spring Boot core — logging and auto-configuration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Jackson databind (tools.jackson) — required to compile and run JacksonJsonDeserializer.
+             spring-boot-starter-kafka does not transitively pull in jackson-databind; the starter
+             assumes Jackson is already on the classpath via another starter. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+
+        <!-- Spring Kafka — @KafkaListener consumer for radar.validated-positions topic -->
+        <!-- spring-boot-starter-kafka transitively pulls in spring-boot-kafka (Spring Boot 4
+             auto-configuration for Kafka) which in turn pulls in spring-kafka (the core
+             @KafkaListener / KafkaTemplate library). Spring Boot 4.0 extracted Kafka
+             auto-configuration from spring-boot-autoconfigure into spring-boot-kafka. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+
+        <!-- Spring Data MongoDB — repositories for closed infringement event persistence -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ArchUnit — executable architecture rules; version managed in root pom -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Boot 4 modular test slice for @DataMongoTest.
+             Spring Boot 4 extracted test slices from spring-boot-test-autoconfigure
+             into per-technology starters; this one provides @DataMongoTest. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- spring-boot-testcontainers — provides @ServiceConnection support,
+             which auto-wires the MongoDB container's connection details without
+             requiring a @DynamicPropertySource bridge. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers JUnit 5 extension — @Testcontainers and @Container.
+             Artifact renamed junit-jupiter → testcontainers-junit-jupiter in TC 2.0. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers MongoDB container.
+             Artifact renamed mongodb → testcontainers-mongodb in TC 2.0;
+             MongoDBContainer moved from org.testcontainers.containers to org.testcontainers.mongodb. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-mongodb</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,63 @@
+<div class="p-8">
+
+  <!-- Page header -->
+  <div class="flex items-center gap-3 mb-7">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+         stroke="var(--color-nav-active-text)" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7"/>
+      <rect x="14" y="3" width="7" height="7"/>
+      <rect x="3" y="14" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/>
+    </svg>
+    <div>
+      <h1 class="text-xl font-semibold m-0" style="color: var(--color-text-primary);">Dashboard</h1>
+      <p class="text-sm m-0" style="color: var(--color-text-secondary);">
+        Safety event summary — counts refresh on navigation
+      </p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex gap-5">
+      <div class="animate-pulse rounded-xl border flex-1 h-40"
+           style="background: var(--color-topbar); border-color: var(--color-border); box-shadow: var(--shadow-card);"></div>
+      <div class="animate-pulse rounded-xl border flex-1 h-40"
+           style="background: var(--color-topbar); border-color: var(--color-border); box-shadow: var(--shadow-card);"></div>
+    </div>
+  } @else {
+    @if (error()) {
+      <p class="mb-4 text-sm" style="color: var(--color-aircraft-pink);">{{ error() }}</p>
+    }
+    <div class="flex gap-5 mb-5">
+      <app-summary-count-widget
+        [count]="summary()?.pendingCount ?? null"
+        label="Pending Review"
+        subtitle="Separation events awaiting review"
+        colour="blue"
+        routerLink="/events"
+        linkLabel="Go to Events" />
+      <app-summary-count-widget
+        [count]="summary()?.escalatedCount ?? null"
+        label="Escalated to Board"
+        subtitle="Events forwarded to safety board"
+        colour="amber"
+        routerLink="/events"
+        linkLabel="View Escalated" />
+    </div>
+  }
+
+  <!-- Future widgets placeholder -->
+  <div class="placeholder-widget rounded-xl border-2 border-dashed flex items-center justify-center gap-2.5 py-7"
+       style="border-color: var(--color-border);">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="var(--color-text-subtle)" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="12" y1="8" x2="12" y2="16"/>
+      <line x1="8" y1="12" x2="16" y2="12"/>
+    </svg>
+    <span class="text-sm" style="color: var(--color-text-subtle);">
+      Additional widgets will appear here as the system acquires new capabilities
+    </span>
+  </div>
+
+</div>

@@ -1,0 +1,19 @@
+<div class="rounded-lg border p-3" style="background: var(--color-card-bg); border-color: var(--color-border);">
+  <textarea
+    class="w-full text-xs resize-none outline-none leading-relaxed"
+    style="background: transparent; border: none; color: var(--color-text-secondary); min-height: 56px; font-family: inherit;"
+    placeholder="Write a note and click Save…"
+    [value]="draftText()"
+    (input)="draftText.set($any($event.target).value)"
+    aria-label="New comment text"></textarea>
+  <div class="flex justify-end mt-2 pt-2 border-t" style="border-color: var(--color-border);">
+    <button
+      class="text-xs rounded px-3 py-1.5 font-medium"
+      style="background: var(--color-border); color: var(--color-nav-active-text);"
+      [disabled]="!draftText().trim()"
+      [style.opacity]="draftText().trim() ? '1' : '0.5'"
+      (click)="onSubmit()">
+      Save Note
+    </button>
+  </div>
+</div>
