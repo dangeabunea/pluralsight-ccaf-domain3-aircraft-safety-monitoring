@@ -13,8 +13,8 @@ package com.atcsafety.detection.domain;
  *
  * <p>Default values when properties are absent:
  * <ul>
- *   <li>{@code horizontalThresholdNm} = 6.0 NM</li>
- *   <li>{@code verticalThresholdFt} = 2500 ft</li>
+ *   <li>{@code horizontalThresholdNm} = 5.0 NM</li>
+ *   <li>{@code verticalThresholdFt} = 1000 ft</li>
  * </ul>
  *
  * <p>This record is pure Java with zero framework imports, keeping the domain layer

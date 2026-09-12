@@ -124,10 +124,13 @@ export class SeparationMapComponent implements AfterViewInit, OnChanges, OnDestr
 
       this.initLabelFeatures();
 
+      // Esri Light Gray Canvas — keyless basemap. CARTO's keyless tiles are now
+      // watermarked "API KEY REQUIRED". Note Esri's {z}/{y}/{x} (row before column) order.
       const tileLayer = new TileLayer({
         source: new XYZ({
-          url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
-          attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+          maxZoom: 16,
+          attributions: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
         })
       });
 

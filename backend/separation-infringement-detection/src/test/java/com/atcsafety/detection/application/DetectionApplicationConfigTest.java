@@ -136,13 +136,13 @@ class DetectionApplicationConfigTest {
         void should_start_and_use_default_horizontal_threshold_when_property_is_absent() {
             contextRunner
                     .withPropertyValues(
-                            "detection.verticalThresholdFt=2500",
+                            "detection.verticalThresholdFt=1000",
                             "detection.gracePeriodCycles=3",
                             "detection.kafka.topic=radar.validated-positions")
                     .run(context -> {
                         assertThat(context).hasNotFailed();
                         var thresholds = context.getBean(SeparationThresholds.class);
-                        assertThat(thresholds.horizontalThresholdNm()).isEqualTo(6.0);
+                        assertThat(thresholds.horizontalThresholdNm()).isEqualTo(5.0);
                     });
         }
 
@@ -150,13 +150,13 @@ class DetectionApplicationConfigTest {
         void should_start_and_use_default_vertical_threshold_when_property_is_absent() {
             contextRunner
                     .withPropertyValues(
-                            "detection.horizontalThresholdNm=6.0",
+                            "detection.horizontalThresholdNm=5.0",
                             "detection.gracePeriodCycles=3",
                             "detection.kafka.topic=radar.validated-positions")
                     .run(context -> {
                         assertThat(context).hasNotFailed();
                         var thresholds = context.getBean(SeparationThresholds.class);
-                        assertThat(thresholds.verticalThresholdFt()).isEqualTo(2500);
+                        assertThat(thresholds.verticalThresholdFt()).isEqualTo(1000);
                     });
         }
 
@@ -181,8 +181,8 @@ class DetectionApplicationConfigTest {
                     .run(context -> {
                         assertThat(context).hasNotFailed();
                         var thresholds = context.getBean(SeparationThresholds.class);
-                        assertThat(thresholds.horizontalThresholdNm()).isEqualTo(6.0);
-                        assertThat(thresholds.verticalThresholdFt()).isEqualTo(2500);
+                        assertThat(thresholds.horizontalThresholdNm()).isEqualTo(5.0);
+                        assertThat(thresholds.verticalThresholdFt()).isEqualTo(1000);
                         assertThat(context.getBean("gracePeriodCycles", Integer.class)).isEqualTo(3);
                     });
         }

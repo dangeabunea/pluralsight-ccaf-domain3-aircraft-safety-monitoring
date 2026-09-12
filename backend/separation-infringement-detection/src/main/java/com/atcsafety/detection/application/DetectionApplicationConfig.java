@@ -30,8 +30,8 @@ public class DetectionApplicationConfig {
 
     private static final Logger log = LoggerFactory.getLogger(DetectionApplicationConfig.class);
 
-    private static final double DEFAULT_HORIZONTAL_THRESHOLD_NM = 6.0;
-    private static final int DEFAULT_VERTICAL_THRESHOLD_FT = 2500;
+    private static final double DEFAULT_HORIZONTAL_THRESHOLD_NM = 5.0;
+    private static final int DEFAULT_VERTICAL_THRESHOLD_FT = 1000;
     private static final int DEFAULT_GRACE_PERIOD_CYCLES = 3;
     private static final int DEFAULT_OBSERVATION_WINDOW_CYCLES = 12;
 
@@ -39,9 +39,9 @@ public class DetectionApplicationConfig {
      * Creates a {@link SeparationThresholds} bean from externalized configuration.
      *
      * <p>If {@code detection.horizontalThresholdNm} is absent, the default value of
-     * 6.0 NM is used and a WARN is logged.
+     * 5.0 NM is used and a WARN is logged.
      * If {@code detection.verticalThresholdFt} is absent, the default value of
-     * 2500 ft is used and a WARN is logged.
+     * 1000 ft is used and a WARN is logged.
      *
      * @throws IllegalStateException never — both thresholds have safe defaults
      */

@@ -49,6 +49,16 @@ describe('NavComponent', () => {
     expect(link.textContent.trim()).toBe('Events');
   });
 
+  it('should have a How it works link that opens the static overview page in a new tab', () => {
+    const fixture = TestBed.createComponent(NavComponent);
+    fixture.detectChanges();
+    const link = fixture.nativeElement.querySelector('a[href="/architecture-overview.html"]');
+    expect(link).toBeTruthy();
+    expect(link.textContent.trim()).toBe('How it works');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toContain('noopener');
+  });
+
   it('should mark Dashboard as active when navigated to /dashboard', async () => {
     const fixture = TestBed.createComponent(NavComponent);
     const router = TestBed.inject(Router);
