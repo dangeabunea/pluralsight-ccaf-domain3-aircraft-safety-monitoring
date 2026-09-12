@@ -4,16 +4,14 @@ This file gives Claude Code persistent context for the **ATC Safety Monitoring S
 
 ## Architecture
 
-Data flow: `radar-data-processing` (batch, publishes radar positions to Kafka, then exits) → Kafka topic `radar.validated-positions` → `separation-infringement-detection` (long-running consumer, holds open events in memory) → MongoDB (closed events only) → `rest-api` (Backend for Frontend) → `web-app` (Angular, where analysts review events).
+Data flow: `radar-data-processing` (batch, publishes radar positions to Kafka, then exits) → 
+Kafka topic `radar.validated-positions` → 
+`separation-infringement-detection` (long-running consumer, holds open events in memory) → 
+MongoDB (closed events only) → 
+`rest-api` (Backend for Frontend) → 
+`web-app` (Angular, where analysts review events).
 
-An infringement is two aircraft simultaneously **< 5 NM horizontally and < 1,000 ft vertically** apart (both strict less-than — a value exactly on the threshold is not an infringement). Detected events go through a state machine, not a simple open/close flag:
-
-- **Active** — aircraft currently too close.
-- **Grace period** — separated; held for 3 radar cycles (~15s) in case they close again (same event continues).
-- **Observation window** — after the grace period, 12 more cycles (~1 min) are recorded to show how the aircraft moved apart.
-- **Closed** — saved to MongoDB, appears in the web app as "Pending Review" for an analyst to escalate or dismiss.
-
-Nothing is persisted until an event closes. See `docs/architecture-overview.md` for the full write-up and diagrams.
+See `docs/architecture-overview.md` for the full write-up and diagrams.
 
 `backend/atcsafety-contracts` holds types shared across services (e.g. `RadarPosition`) and is built first — see the `<modules>` order in the root `pom.xml`. Downstream modules depend on it; it must never depend on them.
 
@@ -44,8 +42,8 @@ Regenerate the radar dump (30 flights, 120 cycles, 8 scripted infringements) wit
 
 ## Backend conventions (Java 21 / Spring Boot 4)
 
-Each backend module is layered into `domain/`, `application/`, `infrastructure/`, enforced at `mvn test` time by an `ArchitectureRulesTest` (ArchUnit) per module — these aren't just conventions, violating them fails the build:
-
+Each backend module is layered into `domain/`, `application/`, `infrastructure/`, enforced at `mvn test` time 
+by an `ArchitectureRulesTest` (ArchUnit) per module — these aren't just conventions, violating them fails the build:
 - `domain/` is plain Java — zero Spring, Spring Data, or Kafka imports.
 - `application/` may depend on `domain/` but never on `infrastructure/`.
 - Classes named `*Document` (MongoDB persistence models) must live in `infrastructure/`.
@@ -54,7 +52,7 @@ Each backend module is layered into `domain/`, `application/`, `infrastructure/`
 - No class ending in `Controller` may depend on a class ending in `Repository`.
 - No cyclic dependencies between a module's top-level sub-packages.
 
-Other conventions, verified against the current codebase:
+Other conventions:
 
 - Classes and their methods default to **package-private**, not `public`, unless they need to be used outside their package (see `EventController`, `EventService`).
 - Logging goes through SLF4J only — `System.out`/`System.err` fails both PMD (`SystemPrintln`) and the ArchUnit `LoggingPolicy` rule. This matters here: log lines carry the timestamps and severity that an incident investigation would rely on.
@@ -99,6 +97,11 @@ Other conventions, verified against the current codebase:
 
 ## Working in this codebase
 
-- This is a safety-critical detection system. The separation thresholds (5 NM / 1,000 ft, configured as `detection.horizontalThresholdNm` / `detection.verticalThresholdFt` in `separation-infringement-detection`'s `application.properties`) and the event-lifecycle timing (3-cycle grace period, 12-cycle observation window) in `separation-infringement-detection/domain` are safety parameters, not arbitrary constants — flag any change to them explicitly rather than adjusting them silently as a side effect of an unrelated fix.
-- Prefer the narrowest test that covers a change (`mvn test -pl backend/<module>`, or a single Angular spec) over the full suite while iterating.
+- This is a safety-critical detection system. The separation thresholds are configured as `detection.horizontalThresholdNm` / `detection.verticalThresholdFt` in `separation-infringement-detection`'s `application.properties`) and the event-lifecycle timing (3-cycle grace period, 12-cycle observation window) in `separation-infringement-detection/domain` are safety parameters, not arbitrary constants — flag any change to them explicitly rather than adjusting them silently as a side effect of an unrelated fix.
 - If a change touches `atcsafety-contracts`, rebuild it (`mvn install -pl backend/atcsafety-contracts`) before testing downstream modules against it.
+
+## Claude behavior
+
+- Never assume anything, always ask human when you are in doubt
+- Always try to surface implicit assumptions and make them explicit so human can review
+- Do noy overengineer code, prefer simple, maintainable solutions
