@@ -1,4 +1,4 @@
-# rest-api test conventions
+# Java Testing Conventions
 
 - **IMPORTANT: test method names must follow `should_<expected>_when_<condition>`** — not `test...`, not a plain description.
 - Every test method body must be split into three explicitly commented sections, in this order: `// arrange`, `// act`, `// assert`.

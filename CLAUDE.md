@@ -17,7 +17,7 @@ See `docs/architecture-overview.md` for the full write-up and diagrams.
 
 ## Running the system locally
 
-@docs/running-locally.md
+Please refer to @docs/running-locally.md
 
 ## Backend conventions (Java 21 / Spring Boot 4)
 
