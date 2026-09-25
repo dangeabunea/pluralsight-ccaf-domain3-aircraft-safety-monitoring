@@ -59,6 +59,8 @@ services:
       DETECTION_KAFKA_TOPIC: radar.validated-positions
       DETECTION_HORIZONTAL_THRESHOLD_NM: "5.0"
       DETECTION_VERTICAL_THRESHOLD_FT: "1000"
+      DETECTION_VERTICAL_THRESHOLD_UPPER_FT: "2000"
+      DETECTION_UPPER_ALTITUDE_LIMIT_FT: "41000"
       DETECTION_GRACE_PERIOD_CYCLES: "3"
     depends_on:
       kafka:    { condition: service_healthy }

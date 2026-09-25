@@ -7,9 +7,23 @@ The system replays recorded radar data, detects aircraft that fly too close to e
 A separation minima infringement happens when two aircraft are, **at the same time**:
 
 - less than **5 NM** apart horizontally, **and**
-- less than **1,000 ft** apart vertically.
+- closer than the vertical minimum that applies to them.
 
-These are the thresholds the demo stack runs with. They can be configured.
+The vertical minimum depends on how high the aircraft are flying, because altimeters
+become less reliable with altitude:
+
+| Where the pair is | Vertical minimum |
+|---|---|
+| At or below 41,000 ft | **1,000 ft** |
+| **Both** aircraft above 41,000 ft | **2,000 ft** |
+
+Only a pair with *both* aircraft above the limit gets the wider minimum. If one aircraft
+is above it and the other below — or either sits exactly on it — the 1,000 ft minimum
+still applies.
+
+These are the thresholds the demo stack runs with. All three values — the two vertical
+minima and the 41,000 ft limit — can be configured. The demo radar data tops out at
+39,500 ft, so every pair in it is judged against the 1,000 ft minimum.
 
 ### Infringements detected so far (default demo data)
 
