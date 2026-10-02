@@ -37,24 +37,13 @@ public class RadarPositionValidator {
      */
     public ValidationResult validate(RadarPosition position) {
         String flightNb = position.flightNb();
-        if (flightNb == null || flightNb.isBlank()) {
-            log.warn("Rejecting position targetId={}: flightNb is missing or blank",
-                    position.targetId());
-            return ValidationResult.Invalid.of("flightNb is missing or blank");
-        }
 
         List<String> failures = new ArrayList<>();
 
-        if (position.lat() != null && (position.lat() < -90.0f || position.lat() > 90.0f)) {
-            log.warn("Rejecting position targetId={}: lat={} is outside [-90, 90]",
-                    position.targetId(), position.lat());
-            failures.add("lat=" + position.lat() + " is outside [-90, 90]");
-        }
-
-        if (position.lon() != null && (position.lon() < -180.0f || position.lon() > 180.0f)) {
-            log.warn("Rejecting position targetId={}: lon={} is outside [-180, 180]",
-                    position.targetId(), position.lon());
-            failures.add("lon=" + position.lon() + " is outside [-180, 180]");
+        if (flightNb == null || flightNb.isBlank()) {
+            log.warn("Rejecting position targetId={}: flightNb is missing or blank",
+                    position.targetId());
+            failures.add("flightNb is missing or blank");
         }
 
         return failures.isEmpty()
