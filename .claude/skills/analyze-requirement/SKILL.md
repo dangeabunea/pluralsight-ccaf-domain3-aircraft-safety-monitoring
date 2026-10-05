@@ -6,19 +6,14 @@ disallowed-tools: Edit Bash PowerShell
 ---
 ---
 
-Turn the requirement in `$0` into an implementation plan. Follow these steps in order
-and do not skip ahead.
+Turn the requirement in `$0` into an implementation plan. Follow these steps in order and do not skip ahead.
 
-This skill is read-only with one exception: the plan file in step 5. Never edit source
-code, run shell commands, or change any other file.
+This skill is read-only with one exception: the plan file in step 5. Never edit source code, run shell commands, or change any other file.
 
-1. **Read the spec.** Read `$0` (specs live in `docs/specs/`). Restate the requirement
-   in a few lines. If anything is ambiguous, ask the human before continuing.
+1. **Read the spec.** Read `$0` (specs live in `docs/specs/`). Restate the requirement in a few lines. If anything is ambiguous, ask the human before continuing.
 
 2. **Analyze the code.** Launch one or more `general-purpose` subagents (in parallel
-   when areas are independent, e.g. backend vs. frontend) to explore the codebase. Each
-   returns a short list of findings: the files and methods likely to be impacted, and
-   any existing pattern to follow. Wait until agents finish.
+   when areas are independent, e.g. backend vs. frontend) to explore the codebase. Each returns a short list of findings: the files and methods likely to be impacted, and any existing pattern to follow. Wait until agents finish.
 
 3. **Plan.** Enter plan mode and draft the plan from the spec and the findings:
    context, files to change, ordered steps, tests, and verification. Plan needs to
