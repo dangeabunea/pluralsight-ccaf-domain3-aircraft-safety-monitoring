@@ -20,17 +20,14 @@ If that value is empty, use `main`.
 Review only code that was added or changed in this branch. Do not flag
 pre-existing problems unless the change makes them worse.
 
-Look for:
-
-- **Naming and intent**: names that hide or mislead about what the code does;
-  logic that needs a comment only because the code isn't clear
-- **Size and responsibility**: methods or classes doing more than one job;
-  deep nesting; long parameter lists; mixed levels of abstraction
-- **Complexity**: speculative generality, needless indirection, magic
-  numbers or strings, dead code, commented-out code
+Review criteria can be found in [review-criteria.md](review-criteria.md).
 
 Do not comment on formatting or anything a linter or formatter would catch.
 Do not invent findings to fill the sections. If the change is clean, say so.
+
+Verify every finding against the code (Read/Grep) before reporting it, and drop
+anything you cannot confirm. Every finding must cite the exact `file:line` you
+verified.
 
 Be concise. Format output in the following sections:
 
