@@ -1,13 +1,7 @@
 ---
-description: Clean-code and maintainability review of the current branch's changes,
-  applying a software architect's eye at the code level (naming, method/class size,
-  duplication, coupling, module boundary and dependency-direction violations, error
-  handling, testability, consistency with existing patterns). Use when the user asks
-  for a "maintainability review", "clean-code check", an "architecture review
-  perspective" on a diff, or a pre-merge code review of a branch or PR.
+description: Review changes made to the codebase for maintainability and clean code
 argument-hint: [base-branch]
 allowed-tools: Bash, Read, Grep, Glob
-context: fork
 ---
 
 Review the changes on the current branch against the base branch for
