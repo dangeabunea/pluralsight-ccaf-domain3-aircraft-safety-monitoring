@@ -516,6 +516,20 @@ class EventServiceTest {
         }
 
         @Test
+        void should_escalate_event_when_mongo_status_is_closed_as_written_by_detection_service() {
+            // arrange
+            var detail = detailWithReviewStatus("evt-001", "CLOSED");
+            when(eventPort.findById("evt-001")).thenReturn(Optional.of(detail));
+            when(eventPort.changeStatus(any(), any(), any(), any(), any())).thenReturn(true);
+
+            // act
+            ChangeStatusResponse response = eventService.changeStatus("evt-001", "ESCALATED", "Near-miss at FL290");
+
+            // assert
+            assertThat(response.status()).isEqualTo("ESCALATED");
+        }
+
+        @Test
         void should_throw_validation_exception_when_escalating_without_reason() {
             var detail = detailWithReviewStatus("evt-001", "PENDING_REVIEW");
             when(eventPort.findById("evt-001")).thenReturn(Optional.of(detail));

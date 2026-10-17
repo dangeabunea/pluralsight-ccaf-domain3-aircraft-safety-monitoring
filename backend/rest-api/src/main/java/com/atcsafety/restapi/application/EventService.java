@@ -117,7 +117,9 @@ public class EventService {
         ReviewStatus targetStatus = parseReviewStatus(status);
         InfringementEventDetailData detail = eventPort.findById(id)
                 .orElseThrow(() -> new EventNotFoundException(id));
-        ReviewStatus currentStatus = parseReviewStatus(detail.mongoStatus());
+        // The detection service stores "CLOSED"; in the review domain that means PENDING_REVIEW
+        String currentDisplayStatus = "CLOSED".equals(detail.mongoStatus()) ? "PENDING_REVIEW" : detail.mongoStatus();
+        ReviewStatus currentStatus = parseReviewStatus(currentDisplayStatus);
         InfringementReview review = InfringementReview.reconstitute(id, currentStatus);
         review.transitionTo(targetStatus, escalationReason);
         eventPort.changeStatus(id, review.getStatus().name(), review.getEscalationReason(),

@@ -128,6 +128,21 @@ describe('EventsPageComponent', () => {
       req.flush(makePagedResponse([]));
     });
 
+    it('should request a page size of 20 when loading escalated events', () => {
+      // arrange
+      queryParams$.next({ tab: 'escalated' });
+      const fixture = TestBed.createComponent(EventsPageComponent);
+
+      // act
+      fixture.detectChanges();
+
+      // assert
+      controller.expectOne('/api/v1/events/summary').flush(SUMMARY);
+      const req = controller.expectOne(r => r.url === '/api/v1/events');
+      expect(req.request.params.get('size')).toBe('20');
+      req.flush(makePagedResponse([]));
+    });
+
     it('should set the tab signal to "escalated"', () => {
       queryParams$.next({ tab: 'escalated' });
       const fixture = TestBed.createComponent(EventsPageComponent);

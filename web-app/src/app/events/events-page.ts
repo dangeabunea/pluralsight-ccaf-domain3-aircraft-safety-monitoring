@@ -41,8 +41,7 @@ export class EventsPageComponent implements OnInit {
           this.loading.set(true);
           const status = this.tab() === 'pending' ? 'PENDING_REVIEW' : 'ESCALATED';
           const sort = this.tab() === 'pending' ? 'startedAt' : 'escalatedAt';
-          const size = this.tab() === 'escalated' ? 0 : this.PAGE_SIZE;
-          return this.eventApi.listEvents(status, this.page(), size, sort, 'asc').pipe(
+          return this.eventApi.listEvents(status, this.page(), this.PAGE_SIZE, sort, 'asc').pipe(
             catchError(() => {
               this.loading.set(false);
               return EMPTY;
