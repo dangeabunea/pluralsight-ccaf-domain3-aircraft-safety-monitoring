@@ -1,21 +1,14 @@
-# Java Testing Conventions
+## Module notes (separation-infringement-detection)
 
-- **IMPORTANT: test method names must follow `should_<expected>_when_<condition>`** — not `test...`, not a plain description.
-- Every test method body must be split into three explicitly commented sections, in this order: `// arrange`, `// act`, `// assert`.
-- Tests for a given method under test must live in their own nested class (`@Nested`), one nested class per method.
-
-Example:
-
-```java
-@Test
-void should_return_empty_set_and_skip_analysis_when_cycle_has_only_one_aircraft() {
-    // arrange
-    var a = pos("BA123", 0.0f, 20000.0f);
-
-    // act
-    var result = detector.detectInfringements(List.of(a), 1);
-
-    // assert
-    assertThat(result).isEmpty();
-}
-```
+- Long-running Kafka consumer (group `detection-service`, `auto-offset-reset=earliest`). Start it before the radar pipeline.
+- State model: open events (ACTIVE, GRACE_PERIOD) live only in memory in `MinSeparationActiveEventRegistry`
+  (impl `InMemoryMinSeparationActiveEventRegistry`); only CLOSED events are persisted through `MinSeparationEventStore`.
+  A restart loses open events by design, so don't add persistence for them without asking.
+- Flow per cycle: `RadarPositionConsumer` -> `CycleDetectionProcessor` -> `InfringementDetector` (pairs + `SeparationCalculator`)
+  -> `MinSeparationEventLifecycleManager` -> store. Keep detection math in `domain/`; `application/` only orchestrates.
+- Safety parameters: `detection.horizontalThresholdNm`, `detection.verticalThresholdFt` and `detection.gracePeriodCycles`
+  live in `application.properties`; the 12-cycle observation window is in `domain/`. Never change them as a side effect.
+- Messages are deserialized into a local `RadarPositionMessage`, with `use.type.headers=false`, so there is no compile-time
+  link to the producer. A change to the producer's message shape must be mirrored here by hand.
+- `AircraftPairKey` identifies a pair independent of order; use it for any lookup of pair-keyed state.
+- Spring Boot 4 property namespace is `spring.mongodb.*`; override via `SPRING_MONGODB_URI` and `SPRING_KAFKA_BOOTSTRAP_SERVERS`.

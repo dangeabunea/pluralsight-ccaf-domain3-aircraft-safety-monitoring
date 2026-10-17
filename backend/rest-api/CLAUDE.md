@@ -1,21 +1,13 @@
-# Java Testing Conventions
+## Module notes (rest-api)
 
-- **IMPORTANT: test method names must follow `should_<expected>_when_<condition>`** — not `test...`, not a plain description.
-- Every test method body must be split into three explicitly commented sections, in this order: `// arrange`, `// act`, `// assert`.
-- Tests for a given method under test must live in their own nested class (`@Nested`), one nested class per method.
-
-Example:
-
-```java
-@Test
-void should_return_empty_set_and_skip_analysis_when_cycle_has_only_one_aircraft() {
-    // arrange
-    var a = pos("BA123", 0.0f, 20000.0f);
-
-    // act
-    var result = detector.detectInfringements(List.of(a), 1);
-
-    // assert
-    assertThat(result).isEmpty();
-}
-```
+- Read/review API over MongoDB, served on port 38090. It only sees closed events written by the detection service;
+  it never talks to Kafka and must not write infringement data itself, only review state (status, comments).
+- Ports and adapters: `application/` defines `InfringementEventPort`, `infrastructure/` implements it
+  (`InfringementEventQueryAdapter` over `InfringementEventRepository`). Controllers and services depend on the port only.
+- Controllers translate exceptions through `EventControllerExceptionHandler`. Throw the existing typed exceptions
+  (`EventNotFoundException`, `InvalidSortFieldException`, `InvalidStatusException`, `CommentValidationException`,
+  and domain `ReviewConflictException` / `ReviewValidationException`) rather than building error responses in the controller.
+- Sort fields are validated against an allow-list (`InvalidSortFieldException`); new sortable fields on list endpoints must be added there.
+- Review rules (status transitions, comment validation) belong in `domain/` (`InfringementReview`, `ReviewStatus`), not in the service or controller.
+- Request/response DTOs are records in `application/`. Keep `*Document` classes out of API responses; map to `*Data`/`*Response`.
+- Spring Boot 4 property namespace is `spring.mongodb.*` (not `spring.data.mongodb.*`); override via `SPRING_MONGODB_URI`.

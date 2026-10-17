@@ -9,6 +9,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +39,40 @@ class RadarPositionValidatorTest {
 
     @Nested
     class Validate {
+
+        @ParameterizedTest(name = "lat={0}, lon={1}")
+        @CsvSource({
+                "34, 34",
+                "-34, -34"
+        })
+        void should_return_valid_when_lat_and_lon_are_within_range(float lat, float lon) {
+            // arrange
+            RadarPosition position = positionWith(lat, lon);
+
+            // act
+            ValidationResult result = validator.validate(position);
+
+            // assert
+            assertThat(result).isInstanceOf(ValidationResult.Valid.class);
+        }
+
+        @ParameterizedTest(name = "lat={0}, lon={1}")
+        @CsvSource({
+                "92, 34",
+                "34, 184",
+                "-91, 91",
+                "-10, -191"
+        })
+        void should_return_invalid_when_lat_or_lon_is_out_of_range(float lat, float lon) {
+            // arrange
+            RadarPosition position = positionWith(lat, lon);
+
+            // act
+            ValidationResult result = validator.validate(position);
+
+            // assert
+            assertThat(result).isInstanceOf(ValidationResult.Invalid.class);
+        }
 
         @Test
         void should_return_invalid_when_lat_exceeds_upper_bound() {

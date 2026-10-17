@@ -1,8 +1,13 @@
+---
+paths: ["**/*.spec.ts"]
+---
+
 # Frontend testing conventions
 
-- **IMPORTANT: `it(...)` titles must follow `should <expected> when <condition>`** — space-separated words, not the Java underscore style used in backend tests. Do not mix the two conventions across languages.
+- **IMPORTANT: `it(...)` titles must follow `should <expected> when <condition>`** — space-separated words
 - Every test body must be split into three explicitly commented sections, in this order: `// arrange`, `// act`, `// assert`.
 - Tests must be grouped with `describe`, one `describe` block per action/scenario being tested.
+- Use helper functions to avoid repeating code when creating test objects.
 
 Example:
 
