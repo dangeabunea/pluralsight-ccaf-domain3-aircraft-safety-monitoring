@@ -21,19 +21,11 @@ jobs:
       # -p runs claude non-interactively (print mode): it answers once and exits.
       # Without -p, claude starts the interactive UI and waits for keyboard input,
       # which a CI runner never provides, so the job stalls until it times out.
-      # --output-format json wraps the answer in a JSON envelope (.result plus cost/session metadata);
-      # omit it and you get plain text, which is fine to read in a log but not to parse.
       - name: Review changes
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BASE_REF: ${{ github.base_ref }}
         run: |
-          claude "Review the changes in this branch against origin/$BASE_REF using the reviewing-code-maintainability skill. Tell me the top risks and flag any change to the separation thresholds or the grace/observation cycle timings. Keep it under 200 words." \
-            --output-format json \
-            --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*)" > review.json
-
-      - name: Post review as PR comment
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: jq -r '.result' review.json | gh pr comment "$PR_NUMBER" --body-file -
+          claude "Review the changes in this branch against origin/$BASE_REF.
+          Summarize what changed, list the main risks, code smells, security vulnerabilities,
+          and say what the PR description should include."
