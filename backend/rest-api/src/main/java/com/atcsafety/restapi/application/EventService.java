@@ -171,6 +171,44 @@ public class EventService {
         }
     }
 
+    public String exportCsv(String status, String sortField, String sortDirection) {
+        String csv = "id,first,second,status,minHorizontalNm,minVerticalFt,severity\n";
+        Collection<String> mongoStatuses;
+        if (status.equals("PENDING_REVIEW")) {
+            mongoStatuses = List.of("CLOSED", "PENDING_REVIEW");
+        } else if (status.equals("ESCALATED")) {
+            mongoStatuses = List.of("ESCALATED");
+        } else if (status.equals("DISMISSED")) {
+            mongoStatuses = List.of("DISMISSED");
+        } else {
+            throw new InvalidStatusException(status);
+        }
+        if (sortField != null && !sortField.equals("startedAt") && !sortField.equals("escalatedAt")) {
+            throw new InvalidSortFieldException(sortField);
+        }
+        for (InfringementEventData d : eventPort.findPageWithMongoStatuses(mongoStatuses, 0, 10000, sortField, sortDirection)) {
+            String s = d.mongoStatus();
+            if (s.equals("CLOSED")) {
+                s = "PENDING_REVIEW";
+            }
+            String severity;
+            if (d.minHorizontalSeparationNm() != null && d.minVerticalSeparationFt() != null) {
+                if (d.minHorizontalSeparationNm() < 1.5 && d.minVerticalSeparationFt() < 500) {
+                    severity = "HIGH";
+                } else if (d.minHorizontalSeparationNm() < 3 && d.minVerticalSeparationFt() < 800) {
+                    severity = "MEDIUM";
+                } else {
+                    severity = "LOW";
+                }
+            } else {
+                severity = "UNKNOWN";
+            }
+            csv += d.id() + "," + d.firstAircraftCallsign() + "," + d.secondAircraftCallsign() + "," + s + ","
+                    + d.minHorizontalSeparationNm() + "," + d.minVerticalSeparationFt() + "," + severity + "\n";
+        }
+        return csv;
+    }
+
     private static final String EVENT_TYPE = "SeparationMinimaInfringement";
 
     private EventListItemResponse toListItem(InfringementEventData data) {
