@@ -28,8 +28,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BASE_REF: ${{ github.base_ref }}
         run: |
-          claude -p "Review the changes in this branch against origin/$BASE_REF using the reviewing-code-maintainability skill. Tell me the top risks and flag any change to the separation thresholds or the grace/observation cycle timings. Keep it under 200 words." \
-            --output-format json \            
+          claude "Review the changes in this branch against origin/$BASE_REF using the reviewing-code-maintainability skill. Tell me the top risks and flag any change to the separation thresholds or the grace/observation cycle timings. Keep it under 200 words." \
+            --output-format json \
             --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*)" > review.json
 
       - name: Post review as PR comment
