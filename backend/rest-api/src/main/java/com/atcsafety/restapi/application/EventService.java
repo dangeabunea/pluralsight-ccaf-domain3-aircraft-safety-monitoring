@@ -61,18 +61,6 @@ public class EventService {
         return new PagedResponse<>(items, totalElements, totalPages, page, size);
     }
 
-    /**
-     * Builds a CSV export of every event in {@code status} (up to {@link #MAX_EXPORT_EVENTS}),
-     * sorted the same way the paginated list endpoint is.
-     */
-    public String exportEventsAsCsv(String status, String sortField, String sortDirection) {
-        validateSortField(sortField);
-        Collection<String> mongoStatuses = mongoStatusesFor(status);
-        List<InfringementEventData> events = eventPort.findPageWithMongoStatuses(
-                mongoStatuses, 0, MAX_EXPORT_EVENTS, sortField, sortDirection);
-        return InfringementEventCsvWriter.toCsv(events);
-    }
-
     private void validateSortField(String sortField) {
         if (sortField != null && !ALLOWED_SORT_FIELDS.contains(sortField)) {
             throw new InvalidSortFieldException(sortField);
@@ -144,12 +132,12 @@ public class EventService {
     }
 
     /**
-     * Exports infringement events with the given status as CSV (max 10,000 rows).
+     * Exports infringement events with the given status as CSV (max {@link #MAX_EXPORT_EVENTS} rows).
      * Maps PENDING_REVIEW to both CLOSED and PENDING_REVIEW in Mongo, and derives
      * severity from the minimum horizontal/vertical separation.
      */
     public String exportCsv(String status, String sortField, String sortDirection) {
-        String csv = "id,first,second,status,minHorizontalNm,minVerticalFt,severity\n";
+        StringBuilder csv = new StringBuilder("id,first,second,status,minHorizontalNm,minVerticalFt,severity\n");
         Collection<String> mongoStatuses;
         if (status.equals("PENDING_REVIEW")) {
             mongoStatuses = List.of("CLOSED", "PENDING_REVIEW");
@@ -163,7 +151,7 @@ public class EventService {
         if (sortField != null && !sortField.equals("startedAt") && !sortField.equals("escalatedAt")) {
             throw new InvalidSortFieldException(sortField);
         }
-        for (InfringementEventData d : eventPort.findPageWithMongoStatuses(mongoStatuses, 0, 10000, sortField, sortDirection)) {
+        for (InfringementEventData d : eventPort.findPageWithMongoStatuses(mongoStatuses, 0, MAX_EXPORT_EVENTS, sortField, sortDirection)) {
             String s = d.mongoStatus();
             if (s.equals("CLOSED")) {
                 s = "PENDING_REVIEW";
@@ -180,10 +168,15 @@ public class EventService {
             } else {
                 severity = "UNKNOWN";
             }
-            csv += d.id() + "," + d.firstAircraftCallsign() + "," + d.secondAircraftCallsign() + "," + s + ","
-                    + d.minHorizontalSeparationNm() + "," + d.minVerticalSeparationFt() + "," + severity + "\n";
+            csv.append(d.id()).append(',')
+                    .append(d.firstAircraftCallsign()).append(',')
+                    .append(d.secondAircraftCallsign()).append(',')
+                    .append(s).append(',')
+                    .append(d.minHorizontalSeparationNm()).append(',')
+                    .append(d.minVerticalSeparationFt()).append(',')
+                    .append(severity).append('\n');
         }
-        return csv;
+        return csv.toString();
     }
 
     private ReviewStatus parseReviewStatus(String status) {
