@@ -84,3 +84,30 @@ Other conventions:
 - Never assume anything, always ask human when you are in doubt
 - Always try to surface implicit assumptions and make them explicit so human can review
 - Do noy overengineer code, prefer simple, maintainable solutions
+
+
+## Code review guidelines
+
+When asked to review a change, review only what the diff adds or modifies.
+
+### Scope
+
+Report two kinds of issues, nothing else:
+- **Maintainability**: duplicated logic, methods that are too long or deeply nested, magic numbers, unclear naming, and violations of the conventions in this file.
+- **Security**: unvalidated input, missing authorization, injection, secrets in code or logs, and unsafe handling of user-supplied data.
+
+Do not report style preferences, formatting, or anything PMD, ArchUnit or the compiler already enforce.
+
+### Severity
+
+Give every issue exactly one severity:
+- **high**: likely to cause a bug, an incident or a security breach, or makes the code unsafe to change.
+- **medium**: makes the code noticeably harder to understand or change, with no immediate failure.
+- **low**: a small improvement worth making but safe to defer.
+
+### Quality bar
+
+- Report only issues you are confident about, and only those worth a human's time. Fewer, stronger findings beat a long list.
+- For each issue, state what is wrong and why it matters. An issue without a reason is not useful.
+- Keep each issue to one or two sentences.
+- If the change has no issues in scope, say so plainly instead of inventing some.
