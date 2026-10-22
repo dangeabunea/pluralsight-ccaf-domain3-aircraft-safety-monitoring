@@ -7,6 +7,11 @@ permissions:
   contents: read
   pull-requests: write
 
+# Two overlapping runs would both read the same prior findings and post duplicates.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   claude-code-review:
     runs-on: ubuntu-latest
@@ -18,6 +23,18 @@ jobs:
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
+      # Each run is stateless, so earlier findings are read back from the PR itself.
+      # Filtering on the bot login keeps human comments (untrusted input) out of the prompt.
+      - name: Collect previous review findings
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]")
+                      | {file: .path, line: (.line // .original_line), comment: .body}' \
+            | jq -s '.' > prior-findings.json
+
       # -p runs claude non-interactively (print mode): it answers once and exits.
       # Without -p, claude starts the interactive UI and waits for keyboard input,
       # which a CI runner never provides, so the job can stall until it times out.
@@ -28,7 +45,15 @@ jobs:
         run: |
           claude -p "Review the changes in this branch against origin/$BASE_REF.
           Follow the code review guidelines in CLAUDE.md.
-          Only report issues on lines added or changed in this diff." \
+          Only report issues on lines added or changed in this diff.
+
+          Earlier reviews of this PR already posted the findings below as PR comments.
+          Do not report any of them again, even if the line number has shifted or the
+          wording would differ. Report only issues they do not cover. If nothing new
+          is found, return an empty issues array.
+          <prior_findings>
+          $(cat prior-findings.json)
+          </prior_findings>" \
             --output-format json \
             --json-schema "$(cat .github/review-schema.json)" \
             --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*)" > review.json
