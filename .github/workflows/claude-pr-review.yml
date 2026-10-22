@@ -20,11 +20,11 @@ jobs:
 
       # -p runs claude non-interactively (print mode): it answers once and exits.
       # Without -p, claude starts the interactive UI and waits for keyboard input,
-      # which a CI runner never provides, so the job stalls until it times out.
+      # which a CI runner never provides, so the job can stall until it times out.
       - name: Review changes
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BASE_REF: ${{ github.base_ref }}
         run: |
           claude -p  "Review the changes in this branch against origin/$BASE_REF.
-          Summarize what changed, list the main risks, code smells."
+          Summarize what changed, list the main risks and maintainability issues."
