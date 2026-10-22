@@ -26,5 +26,26 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BASE_REF: ${{ github.base_ref }}
         run: |
-          claude -p  "Review the changes in this branch against origin/$BASE_REF.
-          Summarize what changed, list the main risks and maintainability issues."
+          claude -p "Review the changes in this branch against origin/$BASE_REF.
+          Follow the code review guidelines in CLAUDE.md.
+          Only report issues on lines added or changed in this diff." \
+            --output-format json \
+            --json-schema "$(cat .github/review-schema.json)" \
+            --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*)" > review.json
+
+      - name: Post inline review comments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          jq '.structured_output | {
+                event: "COMMENT",
+                body: .summary,
+                comments: [.issues[] | {
+                  path: .file,
+                  line: .line,
+                  side: "RIGHT",
+                  body: "**[\(.severity | ascii_upcase)]** \(.issue)"
+                }]
+              }' review.json > payload.json
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --input payload.json

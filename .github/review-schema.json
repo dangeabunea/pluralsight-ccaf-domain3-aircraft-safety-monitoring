@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "2-3 sentences: what the change does and the overall risk."
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "issue": {
+            "type": "string",
+            "description": "What is wrong and why it matters, in one or two sentences."
+          },
+          "severity": { "type": "string", "enum": ["high", "medium", "low"] },
+          "file": {
+            "type": "string",
+            "description": "Path relative to the repo root."
+          },
+          "line": {
+            "type": "integer",
+            "description": "Line number in the new version of the file, on a line added or changed by this diff."
+          }
+        },
+        "required": ["issue", "severity", "file", "line"]
+      }
+    }
+  },
+  "required": ["summary", "issues"]
+}
