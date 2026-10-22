@@ -26,6 +26,7 @@ public class EventService {
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("startedAt", "escalatedAt");
     private static final int MAX_COMMENT_TEXT_LENGTH = 1000;
     private static final int MAX_COMMENT_AUTHOR_LENGTH = 100;
+    static final int MAX_EXPORT_EVENTS = 10_000;
 
     /**
      * MongoDB statuses that map to the PENDING_REVIEW display status.
@@ -58,6 +59,18 @@ public class EventService {
                 .map(this::toListItem)
                 .toList();
         return new PagedResponse<>(items, totalElements, totalPages, page, size);
+    }
+
+    /**
+     * Builds a CSV export of every event in {@code status} (up to {@link #MAX_EXPORT_EVENTS}),
+     * sorted the same way the paginated list endpoint is.
+     */
+    public String exportEventsAsCsv(String status, String sortField, String sortDirection) {
+        validateSortField(sortField);
+        Collection<String> mongoStatuses = mongoStatusesFor(status);
+        List<InfringementEventData> events = eventPort.findPageWithMongoStatuses(
+                mongoStatuses, 0, MAX_EXPORT_EVENTS, sortField, sortDirection);
+        return InfringementEventCsvWriter.toCsv(events);
     }
 
     private void validateSortField(String sortField) {

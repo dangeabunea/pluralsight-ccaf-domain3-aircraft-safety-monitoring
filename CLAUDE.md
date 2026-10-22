@@ -111,4 +111,3 @@ Give every issue exactly one severity:
 - For each issue, state what is wrong and why it matters. An issue without a reason is not useful.
 - Keep each issue to one or two sentences.
 - If the change has no issues in scope, say so plainly instead of inventing some.
-- Try to not report more than 7 issues in total to maintain human focus on the most important fixes.

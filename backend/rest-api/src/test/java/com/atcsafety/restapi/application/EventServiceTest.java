@@ -220,6 +220,134 @@ class EventServiceTest {
     }
 
     @Nested
+    class ExportEventsAsCsv {
+
+        @Test
+        void should_reject_unrecognised_sort_field_to_prevent_injection() {
+            assertThatThrownBy(() -> eventService.exportEventsAsCsv("PENDING_REVIEW", "arbitraryField", "asc"))
+                    .isInstanceOf(InvalidSortFieldException.class);
+        }
+
+        @Test
+        void should_reject_unrecognised_status_with_status_specific_exception() {
+            assertThatThrownBy(() -> eventService.exportEventsAsCsv("UNKNOWN_STATUS", null, null))
+                    .isInstanceOf(InvalidStatusException.class)
+                    .hasMessageContaining("UNKNOWN_STATUS");
+        }
+
+        @Test
+        void should_query_both_closed_and_pending_review_mongo_statuses_when_exporting_pending() {
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of());
+
+            eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            verify(eventPort).findPageWithMongoStatuses(
+                    List.of("CLOSED", "PENDING_REVIEW"), 0, EventService.MAX_EXPORT_EVENTS, null, null);
+        }
+
+        @Test
+        void should_include_header_row_when_no_events_match_status() {
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of());
+
+            String csv = eventService.exportEventsAsCsv("DISMISSED", null, null);
+
+            assertThat(csv).isEqualTo(
+                    "Event ID,Aircraft 1,Aircraft 2,Status,Min Horizontal Separation (NM),"
+                            + "Min Vertical Separation (ft),Severity\n");
+        }
+
+        @Test
+        void should_map_closed_mongo_status_to_pending_review_in_csv_row() {
+            var data = eventDataWithStatus("id1", "CLOSED");
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains("id1,AF100,BA200,PENDING_REVIEW,2.1,450.0,MEDIUM\n");
+        }
+
+        @Test
+        void should_classify_severity_as_high_when_both_separations_below_high_threshold() {
+            var data = eventDataWithSeparations("id1", 1.4, 499.0);
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains(",HIGH\n");
+        }
+
+        @Test
+        void should_classify_severity_as_medium_when_both_separations_below_medium_threshold() {
+            var data = eventDataWithSeparations("id1", 2.9, 799.0);
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains(",MEDIUM\n");
+        }
+
+        @Test
+        void should_classify_severity_as_low_when_separations_are_above_medium_thresholds() {
+            var data = eventDataWithSeparations("id1", 4.0, 1000.0);
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains(",LOW\n");
+        }
+
+        @Test
+        void should_classify_severity_as_unknown_when_horizontal_separation_is_missing() {
+            var data = eventDataWithSeparations("id1", null, 450.0);
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains(",,450.0,UNKNOWN\n");
+        }
+
+        @Test
+        void should_classify_severity_as_unknown_when_vertical_separation_is_missing() {
+            var data = eventDataWithSeparations("id1", 2.1, null);
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains(",2.1,,UNKNOWN\n");
+        }
+
+        @Test
+        void should_quote_callsign_when_it_contains_a_comma() {
+            var data = new InfringementEventData(
+                    "id1", "AF,100", "BA200",
+                    Instant.parse("2026-01-01T10:00:00Z"), Instant.parse("2026-01-01T10:00:25Z"),
+                    "PENDING_REVIEW", null, null, null, 2.1, 450.0, List.of());
+            when(eventPort.findPageWithMongoStatuses(any(), anyInt(), anyInt(), any(), any()))
+                    .thenReturn(List.of(data));
+
+            String csv = eventService.exportEventsAsCsv("PENDING_REVIEW", null, null);
+
+            assertThat(csv).contains("\"AF,100\"");
+        }
+    }
+
+    private InfringementEventData eventDataWithSeparations(String id, Double minHorizontalNm, Double minVerticalFt) {
+        return new InfringementEventData(
+                id, "AF100", "BA200",
+                Instant.parse("2026-01-01T10:00:00Z"),
+                Instant.parse("2026-01-01T10:00:25Z"),
+                "PENDING_REVIEW", null, null, null, minHorizontalNm, minVerticalFt, List.of());
+    }
+
+    @Nested
     class GetEventDetail {
 
         @Test

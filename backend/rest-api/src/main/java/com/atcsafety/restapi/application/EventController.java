@@ -1,6 +1,10 @@
 package com.atcsafety.restapi.application;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,15 +64,38 @@ class EventController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String sort) {
-        String sortField = null;
-        String sortDirection = "asc";
-        if (sort != null && !sort.isBlank()) {
-            String[] parts = sort.split(",", 2);
-            sortField = parts[0].trim();
-            if (parts.length > 1) {
-                sortDirection = parts[1].trim();
-            }
+        SortSpec sortSpec = parseSort(sort);
+        return eventService.listEvents(status, page, size, sortSpec.field(), sortSpec.direction());
+    }
+
+    /**
+     * Returns every event in the given review list as a CSV file (at most
+     * {@link EventService#MAX_EXPORT_EVENTS}).
+     */
+    @GetMapping("/export")
+    ResponseEntity<String> exportEvents(
+            @RequestParam String status,
+            @RequestParam(required = false) String sort) {
+        SortSpec sortSpec = parseSort(sort);
+        String csv = eventService.exportEventsAsCsv(status, sortSpec.field(), sortSpec.direction());
+        String filename = "events-" + status.toLowerCase() + ".csv";
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(filename).build().toString())
+                .body(csv);
+    }
+
+    private SortSpec parseSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return new SortSpec(null, "asc");
         }
-        return eventService.listEvents(status, page, size, sortField, sortDirection);
+        String[] parts = sort.split(",", 2);
+        String field = parts[0].trim();
+        String direction = (parts.length > 1) ? parts[1].trim() : "asc";
+        return new SortSpec(field, direction);
+    }
+
+    private record SortSpec(String field, String direction) {
     }
 }

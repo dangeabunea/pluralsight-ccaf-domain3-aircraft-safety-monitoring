@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -85,6 +86,42 @@ class EventControllerTest {
                     .andExpect(jsonPath("$.content").isEmpty())
                     .andExpect(jsonPath("$.totalElements").value(0))
                     .andExpect(jsonPath("$.totalPages").value(0));
+        }
+    }
+
+    @Nested
+    class ExportEvents {
+
+        @Test
+        void should_return_200_with_csv_content_type_when_events_match_status() throws Exception {
+            when(eventService.exportEventsAsCsv(any(), any(), any()))
+                    .thenReturn("Event ID,Aircraft 1,Aircraft 2,Status,Min Horizontal Separation (NM),"
+                            + "Min Vertical Separation (ft),Severity\nid1,AF100,BA200,PENDING_REVIEW,2.1,450.0,MEDIUM\n");
+
+            mockMvc.perform(get("/api/v1/events/export").param("status", "PENDING_REVIEW"))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Content-Type", "text/csv"))
+                    .andExpect(header().string("Content-Disposition", "attachment; filename=\"events-pending_review.csv\""));
+        }
+
+        @Test
+        void should_return_400_for_unrecognised_sort_field() throws Exception {
+            when(eventService.exportEventsAsCsv(any(), eq("arbitraryField"), any()))
+                    .thenThrow(new InvalidSortFieldException("arbitraryField"));
+
+            mockMvc.perform(get("/api/v1/events/export")
+                            .param("status", "PENDING_REVIEW")
+                            .param("sort", "arbitraryField,asc"))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void should_return_400_for_unrecognised_status() throws Exception {
+            when(eventService.exportEventsAsCsv(eq("UNKNOWN_STATUS"), any(), any()))
+                    .thenThrow(new InvalidStatusException("UNKNOWN_STATUS"));
+
+            mockMvc.perform(get("/api/v1/events/export").param("status", "UNKNOWN_STATUS"))
+                    .andExpect(status().isBadRequest());
         }
     }
 
