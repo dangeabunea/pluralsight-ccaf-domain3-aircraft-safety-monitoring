@@ -49,4 +49,56 @@ class CsvFieldsTest {
             assertThat(result).isNull();
         }
     }
+
+    @Nested
+    class SafeTextCell {
+
+        @Test
+        void should_keep_injected_formula_inside_one_quoted_cell_when_text_contains_a_comma() {
+            // arrange
+            String callsign = "AF100,=HYPERLINK(\"http://x\")";
+
+            // act
+            String result = CsvFields.safeTextCell(callsign);
+
+            // assert
+            assertThat(result).isEqualTo("\"AF100,=HYPERLINK(\"\"http://x\"\")\"");
+        }
+
+        @Test
+        void should_quote_text_when_it_contains_a_line_break() {
+            // arrange
+            String callsign = "AF100\n=1+1";
+
+            // act
+            String result = CsvFields.safeTextCell(callsign);
+
+            // assert
+            assertThat(result).isEqualTo("\"AF100\n=1+1\"");
+        }
+
+        @Test
+        void should_neutralize_then_quote_when_text_starts_with_trigger_and_contains_a_comma() {
+            // arrange
+            String callsign = "=1,2";
+
+            // act
+            String result = CsvFields.safeTextCell(callsign);
+
+            // assert
+            assertThat(result).isEqualTo("\"'=1,2\"");
+        }
+
+        @Test
+        void should_return_text_unchanged_when_it_needs_no_quoting() {
+            // arrange
+            String callsign = "AF100";
+
+            // act
+            String result = CsvFields.safeTextCell(callsign);
+
+            // assert
+            assertThat(result).isEqualTo("AF100");
+        }
+    }
 }

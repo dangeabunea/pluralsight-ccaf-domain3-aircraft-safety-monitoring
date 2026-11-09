@@ -168,9 +168,9 @@ public class EventService {
             } else {
                 severity = "UNKNOWN";
             }
-            csv.append(CsvFields.neutralizeFormula(d.id())).append(',')
-                    .append(CsvFields.neutralizeFormula(d.firstAircraftCallsign())).append(',')
-                    .append(CsvFields.neutralizeFormula(d.secondAircraftCallsign())).append(',')
+            csv.append(CsvFields.safeTextCell(d.id())).append(',')
+                    .append(CsvFields.safeTextCell(d.firstAircraftCallsign())).append(',')
+                    .append(CsvFields.safeTextCell(d.secondAircraftCallsign())).append(',')
                     .append(s).append(',')
                     .append(d.minHorizontalSeparationNm()).append(',')
                     .append(d.minVerticalSeparationFt()).append(',')
