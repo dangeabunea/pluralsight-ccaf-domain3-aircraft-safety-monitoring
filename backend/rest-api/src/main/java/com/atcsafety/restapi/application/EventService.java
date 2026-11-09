@@ -131,6 +131,54 @@ public class EventService {
                 review.getDismissedAt());
     }
 
+    /**
+     * Exports infringement events with the given status as CSV (max {@link #MAX_EXPORT_EVENTS} rows).
+     * Maps PENDING_REVIEW to both CLOSED and PENDING_REVIEW in Mongo, and derives
+     * severity from the minimum horizontal/vertical separation.
+     */
+    public String exportEventsAsCsv(String status, String sortField, String sortDirection) {
+        StringBuilder csv = new StringBuilder("id,first,second,status,minHorizontalNm,minVerticalFt,severity\n");
+        Collection<String> mongoStatuses;
+        if (status.equals("PENDING_REVIEW")) {
+            mongoStatuses = List.of("CLOSED", "PENDING_REVIEW");
+        } else if (status.equals("ESCALATED")) {
+            mongoStatuses = List.of("ESCALATED");
+        } else if (status.equals("DISMISSED")) {
+            mongoStatuses = List.of("DISMISSED");
+        } else {
+            throw new InvalidStatusException(status);
+        }
+        if (sortField != null && !sortField.equals("startedAt") && !sortField.equals("escalatedAt")) {
+            throw new InvalidSortFieldException(sortField);
+        }
+        for (InfringementEventData d : eventPort.findPageWithMongoStatuses(mongoStatuses, 0, MAX_EXPORT_EVENTS, sortField, sortDirection)) {
+            String s = d.mongoStatus();
+            if (s.equals("CLOSED")) {
+                s = "PENDING_REVIEW";
+            }
+            String severity;
+            if (d.minHorizontalSeparationNm() != null && d.minVerticalSeparationFt() != null) {
+                if (d.minHorizontalSeparationNm() < 1.5 && d.minVerticalSeparationFt() < 500) {
+                    severity = "HIGH";
+                } else if (d.minHorizontalSeparationNm() < 3 && d.minVerticalSeparationFt() < 800) {
+                    severity = "MEDIUM";
+                } else {
+                    severity = "LOW";
+                }
+            } else {
+                severity = "UNKNOWN";
+            }
+            csv.append(CsvFields.safeTextCell(d.id())).append(',')
+                    .append(CsvFields.safeTextCell(d.firstAircraftCallsign())).append(',')
+                    .append(CsvFields.safeTextCell(d.secondAircraftCallsign())).append(',')
+                    .append(s).append(',')
+                    .append(d.minHorizontalSeparationNm()).append(',')
+                    .append(d.minVerticalSeparationFt()).append(',')
+                    .append(severity).append('\n');
+        }
+        return csv.toString();
+    }
+
     private ReviewStatus parseReviewStatus(String status) {
         return switch (status) {
             case "PENDING_REVIEW" -> ReviewStatus.PENDING_REVIEW;
