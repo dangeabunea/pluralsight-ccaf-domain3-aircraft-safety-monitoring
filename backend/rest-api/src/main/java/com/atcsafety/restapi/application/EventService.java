@@ -136,7 +136,7 @@ public class EventService {
      * Maps PENDING_REVIEW to both CLOSED and PENDING_REVIEW in Mongo, and derives
      * severity from the minimum horizontal/vertical separation.
      */
-    public String exportCsv(String status, String sortField, String sortDirection) {
+    public String exportEventsAsCsv(String status, String sortField, String sortDirection) {
         StringBuilder csv = new StringBuilder("id,first,second,status,minHorizontalNm,minVerticalFt,severity\n");
         Collection<String> mongoStatuses;
         if (status.equals("PENDING_REVIEW")) {
@@ -168,9 +168,9 @@ public class EventService {
             } else {
                 severity = "UNKNOWN";
             }
-            csv.append(d.id()).append(',')
-                    .append(d.firstAircraftCallsign()).append(',')
-                    .append(d.secondAircraftCallsign()).append(',')
+            csv.append(CsvFields.neutralizeFormula(d.id())).append(',')
+                    .append(CsvFields.neutralizeFormula(d.firstAircraftCallsign())).append(',')
+                    .append(CsvFields.neutralizeFormula(d.secondAircraftCallsign())).append(',')
                     .append(s).append(',')
                     .append(d.minHorizontalSeparationNm()).append(',')
                     .append(d.minVerticalSeparationFt()).append(',')
